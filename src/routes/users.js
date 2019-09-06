@@ -3,26 +3,42 @@ const router = express.Router();
 
 const mysqlConnection = require('../database');
 
-router.get('/', function(req, res) {    
-    getUsersQuery(function(err, result) {
-        if (err) {
-            console.log(err);
-        }        
-        res.json(result);
+//Traer todos los usuarios
+router.get('/', (req, res) => {  
+    mysqlConnection.query('SELECT * FROM users', (err, rows, fields) => {
+        if (!err) {
+            res.json (rows);
+        } else {
+            console.log('Error al ejecutar la consulta.', err);
+        }
     });
 });
 
-function getUsersQuery(callback) {
-    var usersDataQuery = mysqlConnection.query('SELECT * from users', function(err, rows, fields) {
+//Traer solo un usuario por ID
+router.get('/:id', (req, res) => {  
+    const { id } = req.params;
+    mysqlConnection.query('SELECT * FROM users WHERE id = ?', [id], (err, rows, fields) => {
         if (!err) {
-            if (rows) {
-                callback(null, rows);
-            }
+            res.json (rows[0]);
         } else {
-            callback(err, null);
-            console.log('Error al ejecutar la consulta.');
+            console.log('Error al ejecutar la consulta.', err);
         }
     });
-}
+});
+
+//Insertar nuevo usuario
+router.post('/NewUser',(req, res)=>{
+    const { id, nombre, apePat, apeMat, edad, rol, usuario, pass} = req.body;
+    const query = `CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?);`;
+    mysqlConnection.query(query, [id, nombre, apePat, apeMat, edad, rol, usuario, pass], (err, rows, fields) =>{
+        if(!err){
+            console.log(query.toString());
+            console.log(id, nombre, apePat, apeMat, edad, rol, usuario, pass);
+            res.json({Status: 'Usuario guardado correctamente.'});
+        }else{
+            console.log(err);
+        }
+    });
+});
 
 module.exports = router;
