@@ -41,4 +41,32 @@ router.post('/NewUser',(req, res)=>{
     });
 });
 
+//Actualizar usuario
+router.put('/EditUser/:id',(req, res)=>{
+    const { nombre, apePat, apeMat, edad, rol, usuario, pass} = req.body;
+    const { id } = req.params;
+    const query = `CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?);`;
+    mysqlConnection.query(query, [id, nombre, apePat, apeMat, edad, rol, usuario, pass], (err, rows, fields) =>{
+        if(!err){
+            console.log(query.toString());
+            console.log(id, nombre, apePat, apeMat, edad, rol, usuario, pass);
+            res.json({Status: 'Usuario actualizado correctamente.'});
+        }else{
+            console.log(err);
+        }
+    });
+});
+
+//Eliminar usuario
+router.delete('/DeleteUser/:id',(req, res)=>{
+    const { id } = req.params;
+    mysqlConnection.query('DELETE FROM users WHERE id = ?', [id], (err, rows, fields) =>{
+        if(!err){
+            res.json({Status: 'Usuario eliminado correctamente.'});
+        }else{
+            console.log(err);
+        }
+    });
+});
+
 module.exports = router;
